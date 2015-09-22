@@ -13,20 +13,25 @@ public class TransferRequestBody  implements Serializable {
     private String targetAccount;
     private double amount;
 
-    public String getSourceAccount() {
-        return sourceAccount;
+    public TransferRequestBody() {
     }
 
-    public void setSourceAccount(String sourceAccount) {
+    public TransferRequestBody(String sourceAccount, String targetAccount, double amount) {
         this.sourceAccount = sourceAccount;
+        this.targetAccount = targetAccount;
+        this.amount = amount;
+    }
+
+    public String getSourceAccount() {
+        return sourceAccount;
     }
 
     public String getTargetAccount() {
         return targetAccount;
     }
 
-    public void setTargetAccount(String targetAccount) {
-        this.targetAccount = targetAccount;
+    public double getAmount() {
+        return amount;
     }
 
 }

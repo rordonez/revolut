@@ -11,9 +11,6 @@ public class AccountTransfer implements Serializable{
 
     private Status status;
 
-    public AccountTransfer() {
-    }
-
     public Status getStatus() {
         return status;
     }
