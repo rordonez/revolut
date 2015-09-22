@@ -1,7 +1,9 @@
 package rafael.ordonez.revolut.controllers.transactions;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.Link;
 import org.springframework.hateoas.Resource;
+import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,7 +32,8 @@ public class TransactionsController {
     public ResponseEntity<Resource<AccountTransfer>> createTransfer(@RequestBody TransferRequestBody request)
     {
         AccountTransfer transfer = transferService.doTransfer(request.getSourceAccount(), request.getTargetAccount(), request.getAmount());
-        return new ResponseEntity<>(new Resource<>(transfer), HttpStatus.ACCEPTED);
+        Link transferLink = ControllerLinkBuilder.linkTo(this.getClass()).slash(transfer.getId()).withSelfRel();
+        return new ResponseEntity<>(new Resource<>(transfer, transferLink), HttpStatus.ACCEPTED);
     }
 
 }

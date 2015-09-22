@@ -9,11 +9,23 @@ public class AccountTransfer implements Serializable{
 
     private static final long serialVersionUID = 691422037793998175L;
 
-    private Status status;
+    private long id;
+    private AccountTransferStatus status;
 
-    public Status getStatus() {
+    public AccountTransfer() {
+    }
+
+    public AccountTransfer(long id, AccountTransferStatus status) {
+        this.id = id;
+        this.status = status;
+    }
+
+    public AccountTransferStatus getStatus() {
         return status;
     }
 
-    enum Status { PENDING, COMPLETED}
+    public long getId() {
+        return id;
+    }
+
 }
