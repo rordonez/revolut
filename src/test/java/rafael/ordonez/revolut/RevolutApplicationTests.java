@@ -1,4 +1,4 @@
-package revolut;
+package rafael.ordonez.revolut;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
