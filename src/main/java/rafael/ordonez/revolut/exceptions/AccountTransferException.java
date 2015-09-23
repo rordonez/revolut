@@ -5,6 +5,7 @@ package rafael.ordonez.revolut.exceptions;
  */
 public class AccountTransferException extends RuntimeException {
     public AccountTransferException() {
+        super();
     }
 
     public AccountTransferException(String message) {

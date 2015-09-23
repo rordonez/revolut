@@ -14,6 +14,8 @@ import rafael.ordonez.revolut.controllers.transactions.beans.TransferRequestBody
 import rafael.ordonez.revolut.model.transactions.AccountTransfer;
 import rafael.ordonez.revolut.services.TransferService;
 
+import javax.validation.Valid;
+
 /**
  * Created by rafa on 22/9/15.
  */
@@ -29,7 +31,7 @@ public class TransactionsController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<Resource<AccountTransfer>> createTransfer(@RequestBody TransferRequestBody request)
+    public ResponseEntity<Resource<AccountTransfer>> createTransfer(@Valid @RequestBody TransferRequestBody request)
     {
         AccountTransfer transfer = transferService.doTransfer(request.getSourceAccount(), request.getTargetAccount(), request.getAmount());
         Link transferLink = ControllerLinkBuilder.linkTo(this.getClass()).slash(transfer.getId()).withSelfRel();

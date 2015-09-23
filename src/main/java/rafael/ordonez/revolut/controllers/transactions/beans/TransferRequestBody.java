@@ -1,5 +1,6 @@
 package rafael.ordonez.revolut.controllers.transactions.beans;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
 /**
@@ -9,8 +10,11 @@ public class TransferRequestBody  implements Serializable {
 
     private static final long serialVersionUID = -4122376909275921245L;
 
+    @NotNull
     private String sourceAccount;
+    @NotNull
     private String targetAccount;
+
     private double amount;
 
     public TransferRequestBody() {

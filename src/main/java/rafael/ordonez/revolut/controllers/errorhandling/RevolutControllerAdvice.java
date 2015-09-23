@@ -15,7 +15,6 @@ import rafael.ordonez.revolut.exceptions.AccountTransferException;
 
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by rafa on 23/9/15.
@@ -36,9 +35,10 @@ public class RevolutControllerAdvice extends ResponseEntityExceptionHandler {
     }
 
     private List<ErrorNode> getErrors(MethodArgumentNotValidException ex) {
-        return Stream.of(ex.getBindingResult().getAllErrors())
-                    .map(x -> new ErrorNode("Invalid value for argument " + ((FieldError) x).getField()))
-                    .collect(Collectors.toList());
+        return ex.getBindingResult().getAllErrors()
+                .stream()
+                .map(x -> new ErrorNode("Invalid value for argument " + ((FieldError) x).getField()))
+                .collect(Collectors.toList());
     }
 
     private HttpHeaders generateHeaders() {

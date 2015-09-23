@@ -122,6 +122,31 @@ public class TransactionsControllerTest {
                 .andExpect(jsonPath("$.message", is("Unexpected error in transfer")));
     }
 
+    @Test
+    public void testTransferWithNullSourceAccount() throws Exception {
+        TransferRequestBody transferRequestBody = new TransferRequestBody(null, "1", 10.0);
+
+        mockMvc.perform(post("/transactions")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .content(mapper.writeValueAsString(transferRequestBody)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].message", is("Invalid value for argument sourceAccount")));
+    }
+
+    @Test
+    public void testTransferWithBothAccountsNull() throws Exception {
+        TransferRequestBody transferRequestBody = new TransferRequestBody(null, null, 10.0);
+
+        mockMvc.perform(post("/transactions")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .content(mapper.writeValueAsString(transferRequestBody)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$", hasSize(2)));
+    }
+
     /**
      * @see <a href="https://jira.spring.io/browse/SPR-12751">SPR-12751</a>
      * <p>
