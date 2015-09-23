@@ -1,5 +1,6 @@
 package rafael.ordonez.revolut.controllers.transactions.beans;
 
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 
@@ -14,7 +15,7 @@ public class TransferRequestBody  implements Serializable {
     private String sourceAccount;
     @NotNull
     private String targetAccount;
-
+    @Min(value = 1)
     private double amount;
 
     public TransferRequestBody() {

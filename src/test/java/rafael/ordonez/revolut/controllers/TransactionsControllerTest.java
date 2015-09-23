@@ -147,6 +147,21 @@ public class TransactionsControllerTest {
                 .andExpect(jsonPath("$", hasSize(2)));
     }
 
+    @Test
+    public void testCreateTransferWithPositiveAmount() throws Exception {
+        TransferRequestBody transferRequestBody = new TransferRequestBody("1", "2", -1);
+
+        mockMvc.perform(post("/transactions")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .content(mapper.writeValueAsString(transferRequestBody)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].message", is("Invalid value for argument amount")));
+
+
+    }
+
     /**
      * @see <a href="https://jira.spring.io/browse/SPR-12751">SPR-12751</a>
      * <p>
