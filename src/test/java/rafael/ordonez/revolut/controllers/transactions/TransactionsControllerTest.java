@@ -24,6 +24,7 @@ import rafael.ordonez.revolut.RevolutApplicationTests;
 import rafael.ordonez.revolut.controllers.errorhandling.RevolutControllerAdvice;
 import rafael.ordonez.revolut.controllers.transactions.beans.TransferRequestBody;
 import rafael.ordonez.revolut.exceptions.AccountTransferException;
+import rafael.ordonez.revolut.exceptions.ProcessTransactionException;
 import rafael.ordonez.revolut.model.transactions.AccountTransfer;
 import rafael.ordonez.revolut.model.transactions.AccountTransferStatus;
 import rafael.ordonez.revolut.services.TransferService;
@@ -33,7 +34,8 @@ import java.lang.reflect.Method;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -189,6 +191,17 @@ public class TransactionsControllerTest {
                 .andExpect(jsonPath("$.status", is("COMPLETED")));
 
         verify(transferService).processTransfer(transactionId);
+    }
+
+    @Test
+    public void testProcessTransactionThrowATransactionException() throws Exception {
+        long transactionId = 0L;
+        when(transferService.processTransfer(transactionId)).thenThrow(new ProcessTransactionException("Error processing the transfer with id " + transactionId));
+
+        mockMvc.perform(put("/transactions/0")
+                .accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", is("Error processing the transfer with id " + transactionId)));
     }
 
     /**

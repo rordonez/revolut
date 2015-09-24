@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import rafael.ordonez.revolut.exceptions.AccountTransferException;
+import rafael.ordonez.revolut.exceptions.ProcessTransactionException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,6 +26,12 @@ public class RevolutControllerAdvice extends ResponseEntityExceptionHandler {
     @ExceptionHandler(AccountTransferException.class)
     @ResponseBody
     public ResponseEntity<ErrorNode> handleInternalTransferException(AccountTransferException e) {
+        return new ResponseEntity<>(new ErrorNode(e.getMessage()), generateHeaders(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ProcessTransactionException.class)
+    @ResponseBody
+    public ResponseEntity<ErrorNode> handleProcessTransactionException(ProcessTransactionException e) {
         return new ResponseEntity<>(new ErrorNode(e.getMessage()), generateHeaders(), HttpStatus.BAD_REQUEST);
     }
 
