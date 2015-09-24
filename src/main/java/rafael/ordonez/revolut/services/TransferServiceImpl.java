@@ -1,5 +1,7 @@
 package rafael.ordonez.revolut.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rafael.ordonez.revolut.exceptions.AccountNotFoundException;
@@ -17,6 +19,7 @@ import javax.transaction.Transactional;
 @Transactional
 public class TransferServiceImpl implements TransferService {
 
+    final static Logger LOG = LoggerFactory.getLogger(TransferServiceImpl.class);
 
     private TransferRepository transferRepository;
     private AccountRepository accountRepository;
@@ -29,6 +32,7 @@ public class TransferServiceImpl implements TransferService {
 
     @Override
     public AccountTransfer doTransfer(String sourceAccountNumber, String targetAccountNumber, double amount) {
+        LOG.info("Invoking doTransfer service...");
         Account sourceAccount = getAccount(sourceAccountNumber);
         Account targetAccount = getAccount(targetAccountNumber);
 
@@ -44,6 +48,7 @@ public class TransferServiceImpl implements TransferService {
     private Account getAccount(String accountNumber) {
         Account account = accountRepository.findByAccountNumber(accountNumber);
         if (account == null) {
+            LOG.error("The account with number " + accountNumber + " is not found in the system.");
             throw new AccountNotFoundException("The account with number: " + accountNumber + " is not found.");
         }
         return account;
