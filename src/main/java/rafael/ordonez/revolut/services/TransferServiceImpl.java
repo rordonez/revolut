@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import rafael.ordonez.revolut.exceptions.AccountNotFoundException;
 import rafael.ordonez.revolut.model.accounts.Account;
 import rafael.ordonez.revolut.model.transactions.AccountTransfer;
+import rafael.ordonez.revolut.model.transactions.AccountTransferStatus;
 import rafael.ordonez.revolut.repositories.AccountRepository;
 import rafael.ordonez.revolut.repositories.TransferRepository;
 
@@ -47,7 +48,25 @@ public class TransferServiceImpl implements TransferService {
 
     @Override
     public AccountTransfer processTransfer(long transactionId) {
-        return null;
+        AccountTransfer transfer = transferRepository.findOne(transactionId);
+
+        updateSourceAccount(transfer);
+        updateTargetAccount(transfer);
+
+        transfer.setStatus(AccountTransferStatus.COMPLETED);
+        return transferRepository.save(transfer);
+    }
+
+    private void updateTargetAccount(AccountTransfer transfer) {
+        Account targetAccount = accountRepository.findOne(transfer.getTargetAccountId());
+        targetAccount.setBalance(targetAccount.getBalance() + transfer.getAmount());
+        accountRepository.save(targetAccount);
+    }
+
+    private void updateSourceAccount(AccountTransfer transfer) {
+        Account sourceAccount = accountRepository.findOne(transfer.getSourceAccountId());
+        sourceAccount.setBalance(sourceAccount.getBalance() - transfer.getAmount());
+        accountRepository.save(sourceAccount);
     }
 
     private Account getAccount(String accountNumber) {

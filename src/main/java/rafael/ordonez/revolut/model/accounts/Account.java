@@ -24,6 +24,9 @@ public class Account implements Identifiable<Long>, Serializable {
     @Column(name = "accountnumber", nullable = false, unique = true)
     private String accountNumber;
 
+    @Column(name = "balance", nullable = false)
+    private double balance;
+
     @Override
     public Long getId() {
         return id;
@@ -39,5 +42,13 @@ public class Account implements Identifiable<Long>, Serializable {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(double balance) {
+        this.balance = balance;
     }
 }
