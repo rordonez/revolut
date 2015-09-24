@@ -34,6 +34,7 @@ import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -161,6 +162,17 @@ public class TransactionsControllerTest {
                 .andExpect(jsonPath("$[0].message", is("Invalid value for argument amount")));
 
 
+    }
+
+    @Test
+    public void testProcessTransaction() throws Exception {
+
+        mockMvc.perform(put("/transactions/1")
+                .accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.links", hasSize(1)))
+                .andExpect(jsonPath("$.links[0].href", endsWith("/transactions/0")))
+                .andExpect(jsonPath("$.links[0].rel", is("self")));
     }
 
     /**

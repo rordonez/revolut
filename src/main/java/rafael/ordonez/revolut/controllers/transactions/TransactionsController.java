@@ -8,10 +8,7 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import rafael.ordonez.revolut.controllers.transactions.beans.TransferRequestBody;
 import rafael.ordonez.revolut.model.transactions.AccountTransfer;
 import rafael.ordonez.revolut.services.TransferService;
@@ -41,6 +38,14 @@ public class TransactionsController {
         AccountTransfer transfer = transferService.doTransfer(request.getSourceAccount(), request.getTargetAccount(), request.getAmount());
         Link transferLink = ControllerLinkBuilder.linkTo(this.getClass()).slash(transfer.getId()).withSelfRel();
         return new ResponseEntity<>(new Resource<>(transfer, transferLink), HttpStatus.ACCEPTED);
+    }
+
+    @RequestMapping(method = RequestMethod.PUT, value = "/{transferId}")
+    public ResponseEntity<Resource<AccountTransfer>> processTransfer(@PathVariable long transferId) {
+        LOG.info("Processing the transaction with id " + transferId);
+        AccountTransfer transfer = new AccountTransfer(0L, 1L, 5.0);
+        Link transferLink = ControllerLinkBuilder.linkTo(this.getClass()).slash(transfer.getId()).withSelfRel();
+        return new ResponseEntity<>(new Resource<>(transfer, transferLink), HttpStatus.OK);
     }
 
 }
