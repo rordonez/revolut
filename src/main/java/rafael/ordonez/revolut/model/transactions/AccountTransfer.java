@@ -1,5 +1,6 @@
 package rafael.ordonez.revolut.model.transactions;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.hateoas.Identifiable;
 
 import javax.persistence.*;
@@ -14,16 +15,20 @@ public class AccountTransfer implements Identifiable<Long>, Serializable {
 
     private static final long serialVersionUID = 691422037793998175L;
 
+    @JsonIgnore
     @Id
     @GeneratedValue
     private long id;
 
+    @JsonIgnore
     @Column(name = "sourceaccount", nullable = false)
     private Long sourceAccountId;
 
+    @JsonIgnore
     @Column(name = "targetaccount", nullable = false)
     private Long targetAccountId;
 
+    @JsonIgnore
     @Column(name = "amount", nullable = false)
     private double amount;
 
