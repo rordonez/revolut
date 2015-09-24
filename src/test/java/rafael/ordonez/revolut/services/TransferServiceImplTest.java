@@ -8,6 +8,7 @@ import org.springframework.test.context.junit4.AbstractTransactionalJUnit4Spring
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import rafael.ordonez.revolut.RevolutApplication;
 import rafael.ordonez.revolut.exceptions.AccountNotFoundException;
+import rafael.ordonez.revolut.exceptions.TransactionNotFoundException;
 import rafael.ordonez.revolut.model.transactions.AccountTransfer;
 import rafael.ordonez.revolut.model.transactions.AccountTransferStatus;
 import rafael.ordonez.revolut.repositories.AccountRepository;
@@ -78,5 +79,11 @@ public class TransferServiceImplTest extends AbstractTransactionalJUnit4SpringCo
         assertEquals(AccountTransferStatus.COMPLETED, transfer.getStatus());
         assertThat(sourceAccountBalanceAfterTransaction, equalTo(sourceAccountBalance - pendingTransfer.getAmount()));
         assertThat(targetAccountBalanceAfterTransaction, equalTo(targetAccountBalance + pendingTransfer.getAmount()));
+    }
+
+    @Test(expected = TransactionNotFoundException.class)
+    public void testProcessTransactionThrowTransactionNotFoundException() throws Exception {
+        long transactionId = 10L;
+        transferService.processTransfer(transactionId);
     }
 }

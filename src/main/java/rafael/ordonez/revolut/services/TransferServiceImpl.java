@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rafael.ordonez.revolut.exceptions.AccountNotFoundException;
+import rafael.ordonez.revolut.exceptions.TransactionNotFoundException;
 import rafael.ordonez.revolut.model.accounts.Account;
 import rafael.ordonez.revolut.model.transactions.AccountTransfer;
 import rafael.ordonez.revolut.model.transactions.AccountTransferStatus;
@@ -48,13 +49,21 @@ public class TransferServiceImpl implements TransferService {
 
     @Override
     public AccountTransfer processTransfer(long transactionId) {
-        AccountTransfer transfer = transferRepository.findOne(transactionId);
+        AccountTransfer transfer = getTransaction(transactionId);
 
         updateSourceAccount(transfer);
         updateTargetAccount(transfer);
 
         transfer.setStatus(AccountTransferStatus.COMPLETED);
         return transferRepository.save(transfer);
+    }
+
+    private AccountTransfer getTransaction(long transactionId) {
+        AccountTransfer transfer = transferRepository.findOne(transactionId);
+        if (transfer == null) {
+            throw new TransactionNotFoundException("The transaction with id: " + transactionId);
+        }
+        return transfer;
     }
 
     private void updateTargetAccount(AccountTransfer transfer) {
