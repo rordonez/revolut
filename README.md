@@ -49,7 +49,7 @@ After creating a new transaction, it must be processed. To do that a PUT request
 curl -H "Content-Type : application/json" -X PUT http://localhost:8080/transactions/<transactionId>
 ----
 
-If the <transactionId> is not found, the application will return an error message.
+If the <transactionId> is not found, the application will return an error message. Another error is thrown if we try to process a transaction twice.
 
 
 TransferService is a collaborator  within TransactionsController to make the transfers. Constructor injection has been used since it is a mandatory dependency.
