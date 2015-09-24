@@ -9,7 +9,7 @@ import java.io.Serializable;
  * Created by rafa on 22/9/15.
  */
 @Entity
-@Table(name ="transaction")
+@Table(name ="transfer")
 public class AccountTransfer implements Identifiable<Long>, Serializable {
 
     private static final long serialVersionUID = 691422037793998175L;
@@ -18,24 +18,25 @@ public class AccountTransfer implements Identifiable<Long>, Serializable {
     @GeneratedValue
     private long id;
 
-    @Column(name = "sourceAccount", nullable = false)
-    private String sourceAccount;
+    @Column(name = "sourceaccount", nullable = false)
+    private Long sourceAccountId;
 
-    @Column(name = "targetAccount", nullable = false)
-    private String targetAccount;
+    @Column(name = "targetaccount", nullable = false)
+    private Long targetAccountId;
 
     @Column(name = "amount", nullable = false)
     private double amount;
 
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private AccountTransferStatus status;
 
     public AccountTransfer() {
     }
 
-    public AccountTransfer(String sourceAccount, String targetAccount, double amount) {
-        this.sourceAccount = sourceAccount;
-        this.targetAccount = targetAccount;
+    public AccountTransfer(Long sourceAccountId, Long targetAccountId, double amount) {
+        this.sourceAccountId = sourceAccountId;
+        this.targetAccountId = targetAccountId;
         this.amount = amount;
         this.status = AccountTransferStatus.PENDING;
     }
@@ -49,12 +50,12 @@ public class AccountTransfer implements Identifiable<Long>, Serializable {
         return id;
     }
 
-    public String getSourceAccount() {
-        return sourceAccount;
+    public Long getSourceAccountId() {
+        return sourceAccountId;
     }
 
-    public String getTargetAccount() {
-        return targetAccount;
+    public Long getTargetAccountId() {
+        return targetAccountId;
     }
 
     public double getAmount() {

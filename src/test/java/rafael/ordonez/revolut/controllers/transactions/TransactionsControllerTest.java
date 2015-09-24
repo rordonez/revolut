@@ -82,10 +82,7 @@ public class TransactionsControllerTest {
 
     @Test
     public void testTransferServiceIsInvoked() throws Exception {
-        String sourceAccount = "0";
-        String targetAccount = "1";
-        double amount = 10.0;
-        TransferRequestBody transferRequestBody = new TransferRequestBody(sourceAccount, targetAccount, amount);
+        TransferRequestBody transferRequestBody = new TransferRequestBody("0", "1", 10.0);
         Mockito.when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
 
         mockMvc.perform(post("/transactions")
@@ -184,6 +181,6 @@ public class TransactionsControllerTest {
     }
 
     private static AccountTransfer stubbedTransfer(String sourceAccount, String targetAccount, double amount) {
-        return new AccountTransfer(sourceAccount, targetAccount, amount);
+        return new AccountTransfer(0L, 1L, amount);
     }
 }
