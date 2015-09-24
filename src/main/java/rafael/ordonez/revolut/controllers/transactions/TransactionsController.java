@@ -43,7 +43,7 @@ public class TransactionsController {
     @RequestMapping(method = RequestMethod.PUT, value = "/{transferId}")
     public ResponseEntity<Resource<AccountTransfer>> processTransfer(@PathVariable long transferId) {
         LOG.info("Processing the transaction with id " + transferId);
-        AccountTransfer transfer = new AccountTransfer(0L, 1L, 5.0);
+        AccountTransfer transfer = transferService.processTransfer(transferId);
         Link transferLink = ControllerLinkBuilder.linkTo(this.getClass()).slash(transfer.getId()).withSelfRel();
         return new ResponseEntity<>(new Resource<>(transfer, transferLink), HttpStatus.OK);
     }

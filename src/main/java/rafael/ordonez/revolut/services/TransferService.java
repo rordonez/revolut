@@ -10,4 +10,5 @@ public interface TransferService {
 
     AccountTransfer findById(Long id);
 
+    AccountTransfer processTransfer(long transactionId);
 }

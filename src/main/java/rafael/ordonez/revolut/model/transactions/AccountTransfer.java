@@ -66,4 +66,8 @@ public class AccountTransfer implements Identifiable<Long>, Serializable {
     public double getAmount() {
         return amount;
     }
+
+    public void setStatus(AccountTransferStatus status) {
+        this.status = status;
+    }
 }

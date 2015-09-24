@@ -45,6 +45,11 @@ public class TransferServiceImpl implements TransferService {
         return transferRepository.findOne(id);
     }
 
+    @Override
+    public AccountTransfer processTransfer(long transactionId) {
+        return null;
+    }
+
     private Account getAccount(String accountNumber) {
         Account account = accountRepository.findByAccountNumber(accountNumber);
         if (account == null) {

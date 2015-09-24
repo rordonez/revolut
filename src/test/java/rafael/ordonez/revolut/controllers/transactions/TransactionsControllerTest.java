@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -26,6 +25,7 @@ import rafael.ordonez.revolut.controllers.errorhandling.RevolutControllerAdvice;
 import rafael.ordonez.revolut.controllers.transactions.beans.TransferRequestBody;
 import rafael.ordonez.revolut.exceptions.AccountTransferException;
 import rafael.ordonez.revolut.model.transactions.AccountTransfer;
+import rafael.ordonez.revolut.model.transactions.AccountTransferStatus;
 import rafael.ordonez.revolut.services.TransferService;
 
 import java.lang.reflect.Method;
@@ -33,6 +33,7 @@ import java.lang.reflect.Method;
 import static org.hamcrest.CoreMatchers.endsWith;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -72,7 +73,7 @@ public class TransactionsControllerTest {
     @Test
     public void testIfTransactionResourceExists() throws Exception {
         TransferRequestBody transferRequestBody = new TransferRequestBody("0", "1", 10.0);
-        Mockito.when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
+        when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
 
         mockMvc.perform(post("/transactions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -84,14 +85,14 @@ public class TransactionsControllerTest {
     @Test
     public void testTransferServiceIsInvoked() throws Exception {
         TransferRequestBody transferRequestBody = new TransferRequestBody("0", "1", 10.0);
-        Mockito.when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
+        when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
 
         mockMvc.perform(post("/transactions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .content(mapper.writeValueAsString(transferRequestBody)));
 
-        Mockito.verify(transferService).doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount());
+        verify(transferService).doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount());
     }
 
     @Test
@@ -100,21 +101,21 @@ public class TransactionsControllerTest {
         String targetAccount = "1";
         double amount = 10.0;
         TransferRequestBody transferRequestBody = new TransferRequestBody(sourceAccount, targetAccount, amount);
-        Mockito.when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(stubbedTransfer(sourceAccount, targetAccount, amount));
+        when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(stubbedTransfer(0L, 1L, amount));
 
         mockMvc.perform(post("/transactions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .content(mapper.writeValueAsString(transferRequestBody)))
                 .andExpect(jsonPath("$.links", hasSize(1)))
-                .andExpect(jsonPath("$.links[0].href", endsWith("/transactions/" + stubbedTransfer(sourceAccount, targetAccount, amount).getId())))
+                .andExpect(jsonPath("$.links[0].href", endsWith("/transactions/" + stubbedTransfer(0L, 1L, amount).getId())))
                 .andExpect(jsonPath("$.links[0].rel", is("self")));
     }
 
     @Test
     public void testTransferWithExceptionReturnsErrorMessages() throws Exception {
         TransferRequestBody transferRequestBody = new TransferRequestBody("0", "1", 10.0);
-        Mockito.when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenThrow(new AccountTransferException("Unexpected error in transfer"));
+        when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenThrow(new AccountTransferException("Unexpected error in transfer"));
 
         mockMvc.perform(post("/transactions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -166,13 +167,28 @@ public class TransactionsControllerTest {
 
     @Test
     public void testProcessTransaction() throws Exception {
+        long transactionId = 0L;
+        when(transferService.processTransfer(transactionId)).thenReturn(processStubbedTransfer(0L, 1L, 5.0));
 
-        mockMvc.perform(put("/transactions/1")
+        mockMvc.perform(put("/transactions/0")
                 .accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.links", hasSize(1)))
                 .andExpect(jsonPath("$.links[0].href", endsWith("/transactions/0")))
                 .andExpect(jsonPath("$.links[0].rel", is("self")));
+    }
+
+    @Test
+    public void testProcessTransactionInvokeServiceToProcessTheTransaction() throws Exception {
+        long transactionId = 0L;
+        when(transferService.processTransfer(transactionId)).thenReturn(processStubbedTransfer(0L, 1L, 5.0));
+
+        mockMvc.perform(put("/transactions/0")
+                .accept(MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("COMPLETED")));
+
+        verify(transferService).processTransfer(transactionId);
     }
 
     /**
@@ -192,7 +208,13 @@ public class TransactionsControllerTest {
         return exceptionResolver;
     }
 
-    private static AccountTransfer stubbedTransfer(String sourceAccount, String targetAccount, double amount) {
-        return new AccountTransfer(0L, 1L, amount);
+    private static AccountTransfer stubbedTransfer(Long sourceAccount, Long targetAccount, double amount) {
+        return new AccountTransfer(sourceAccount, targetAccount, amount);
+    }
+
+    private static AccountTransfer processStubbedTransfer(Long sourceAccount, Long targetAccount, double amount) {
+        AccountTransfer transfer = stubbedTransfer(sourceAccount, targetAccount, amount);
+        transfer.setStatus(AccountTransferStatus.COMPLETED);
+        return transfer;
     }
 }
