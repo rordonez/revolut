@@ -8,6 +8,7 @@ import org.springframework.test.context.junit4.AbstractTransactionalJUnit4Spring
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import rafael.ordonez.revolut.RevolutApplication;
 import rafael.ordonez.revolut.exceptions.AccountNotFoundException;
+import rafael.ordonez.revolut.exceptions.ProcessDuplicatedTransactionException;
 import rafael.ordonez.revolut.exceptions.TransactionNotFoundException;
 import rafael.ordonez.revolut.model.transactions.AccountTransfer;
 import rafael.ordonez.revolut.model.transactions.AccountTransferStatus;
@@ -86,4 +87,14 @@ public class TransferServiceImplTest extends AbstractTransactionalJUnit4SpringCo
         long transactionId = 10L;
         transferService.processTransfer(transactionId);
     }
+
+    @Test(expected = ProcessDuplicatedTransactionException.class)
+    public void testProcessTransactionTwice() throws Exception {
+        long transactionId = 1L;
+
+        transferService.processTransfer(transactionId);
+        transferService.processTransfer(transactionId);
+    }
+
+
 }

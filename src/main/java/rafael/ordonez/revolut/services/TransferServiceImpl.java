@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import rafael.ordonez.revolut.exceptions.AccountNotFoundException;
+import rafael.ordonez.revolut.exceptions.ProcessDuplicatedTransactionException;
 import rafael.ordonez.revolut.exceptions.TransactionNotFoundException;
 import rafael.ordonez.revolut.model.accounts.Account;
 import rafael.ordonez.revolut.model.transactions.AccountTransfer;
@@ -61,7 +62,10 @@ public class TransferServiceImpl implements TransferService {
     private AccountTransfer getTransaction(long transactionId) {
         AccountTransfer transfer = transferRepository.findOne(transactionId);
         if (transfer == null) {
-            throw new TransactionNotFoundException("The transaction with id: " + transactionId);
+            throw new TransactionNotFoundException("The transaction with id: " + transactionId + " is not found.");
+        }
+        if (transfer.getStatus().equals(AccountTransferStatus.COMPLETED)) {
+            throw new ProcessDuplicatedTransactionException("The transaction with id: " + transactionId + "has been processed.");
         }
         return transfer;
     }
