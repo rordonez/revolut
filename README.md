@@ -1,6 +1,6 @@
 = Revolut REST API Design
 
-The purpouse of this project is to define a basic REST API for money transfers between internal users/accounts.
+The purpose of this project is to define a basic REST API for money transfers between internal users/accounts.
 
 == Technology Stack
 
@@ -23,10 +23,11 @@ This project also includes Unit tests and Integration tests. The approach is to 
 
 == Design Decisions
 
-There is one resource `transactions` and one operation using the POST method. I had in mind to implementations to do the transfer:
+Making a transfer is a two steps process. First, we have to create a transaction. To do this, at the begining I had in mind two implementations to create the transfer:
 
-* First, use an accounts resource and use path variables like: /accounts/0/transfers/1?amount=5.0. This approach forces you to have knowledge about the account ids.
-* Second (implemented), make a POST request to transations resource, like this:
+1) Use an accounts resource and use path variables like: /accounts/0/transfers/1?amount=5.0. This approach forces you to have knowledge about the account ids.
+
+2) Make a POST request to transations resource. This is the solution implemented. Example:
 
 ----
 curl -H "Content-Type: application/json" -X POST -d '{"sourceAccount":"0","targetAccount":"1", "amount":5.0}' http://localhost:8080/transactions
@@ -41,6 +42,15 @@ Where:
 The second one is simpler for this exercise.
 
 NOTE:There are validations to all these fields. For this it is used JSR-303 validations in Spring.
+
+After creating a new transaction, it must be processed. To do that a PUT request must be sent to the server using the URI returned by the first operation. For example:
+
+----
+curl -H "Content-Type : application/json" -X PUT http://localhost:8080/transactions/<transactionId>
+----
+
+If the <transactionId> is not found, the application will return an error message.
+
 
 TransferService is a collaborator  within TransactionsController to make the transfers. Constructor injection has been used since it is a mandatory dependency.
 
