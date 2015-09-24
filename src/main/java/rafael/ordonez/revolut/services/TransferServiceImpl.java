@@ -30,10 +30,15 @@ public class TransferServiceImpl implements TransferService {
     @Override
     public AccountTransfer doTransfer(String sourceAccountNumber, String targetAccountNumber, double amount) {
         Account sourceAccount = getAccount(sourceAccountNumber);
+        Account targetAccount = getAccount(targetAccountNumber);
 
-        AccountTransfer  transfer = new AccountTransfer(sourceAccount.getId(), 1L, amount);
-        AccountTransfer result = transferRepository.save(transfer);
+        AccountTransfer result = transferRepository.save(new AccountTransfer(sourceAccount.getId(), targetAccount.getId(), amount));
         return transferRepository.findOne(result.getId());
+    }
+
+    @Override
+    public AccountTransfer findById(Long id) {
+        return transferRepository.findOne(id);
     }
 
     private Account getAccount(String accountNumber) {

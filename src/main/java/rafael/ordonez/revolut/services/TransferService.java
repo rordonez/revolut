@@ -7,4 +7,7 @@ import rafael.ordonez.revolut.model.transactions.AccountTransfer;
  */
 public interface TransferService {
     AccountTransfer doTransfer(String sourceAccountNumber, String targetAccountNumber, double amount);
+
+    AccountTransfer findById(Long id);
+
 }

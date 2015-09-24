@@ -9,9 +9,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import rafael.ordonez.revolut.RevolutApplication;
 import rafael.ordonez.revolut.exceptions.AccountNotFoundException;
 import rafael.ordonez.revolut.model.transactions.AccountTransfer;
-import rafael.ordonez.revolut.model.transactions.AccountTransferStatus;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Created by rafa on 23/9/15.
@@ -31,13 +30,27 @@ public class TransferServiceImplTest extends AbstractTransactionalJUnit4SpringCo
 
         AccountTransfer transfer = transferService.doTransfer(sourceAccount, targetAccount, amount);
 
-        assertEquals(AccountTransferStatus.PENDING, transfer.getStatus());
+        assertNotNull(transferService.findById(transfer.getId()));
+    }
+
+    @Test
+    public void testFindById() throws Exception {
+        assertNotNull(transferService.findById(1L));
     }
 
     @Test(expected = AccountNotFoundException.class)
     public void testDoTransferThrowAccountNotFoundExceptionIfSourceAccountIsNotFound() throws Exception {
         String sourceAccount = "10";
         String targetAccount = "1";
+        double amount = 10.0;
+
+        transferService.doTransfer(sourceAccount, targetAccount, amount);
+    }
+
+    @Test(expected = AccountNotFoundException.class)
+    public void testDoTransferThrowAccountNotFoundExceptionIfTargetAccountIsNotFound() throws Exception {
+        String sourceAccount = "0";
+        String targetAccount = "10";
         double amount = 10.0;
 
         transferService.doTransfer(sourceAccount, targetAccount, amount);
