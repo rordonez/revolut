@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import rafael.ordonez.revolut.exceptions.AccountNotFoundException;
 import rafael.ordonez.revolut.exceptions.ProcessDuplicatedTransactionException;
 import rafael.ordonez.revolut.exceptions.TransactionNotFoundException;
@@ -13,7 +14,6 @@ import rafael.ordonez.revolut.model.transactions.AccountTransferStatus;
 import rafael.ordonez.revolut.repositories.AccountRepository;
 import rafael.ordonez.revolut.repositories.TransferRepository;
 
-import javax.transaction.Transactional;
 
 /**
  * Created by rafa on 23/9/15.
@@ -32,6 +32,7 @@ public class TransferServiceImpl implements TransferService {
         this.transferRepository = transferRepository;
         this.accountRepository = accountRepository;
     }
+
 
     @Override
     public AccountTransfer doTransfer(String sourceAccountNumber, String targetAccountNumber, double amount) {

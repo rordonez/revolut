@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.MediaType;
@@ -27,6 +25,7 @@ import rafael.ordonez.revolut.exceptions.AccountTransferException;
 import rafael.ordonez.revolut.exceptions.ProcessTransactionException;
 import rafael.ordonez.revolut.model.transactions.AccountTransfer;
 import rafael.ordonez.revolut.model.transactions.AccountTransferStatus;
+import rafael.ordonez.revolut.services.AccountService;
 import rafael.ordonez.revolut.services.TransferService;
 
 import java.lang.reflect.Method;
@@ -56,6 +55,9 @@ public class TransactionsControllerTest {
 
     @Mock
     private TransferService transferService;
+
+    @Mock
+    private AccountService accountService;
 
     @InjectMocks
     private TransactionsController transactionsController;
@@ -203,6 +205,23 @@ public class TransactionsControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message", is("Error processing the transfer with id " + transactionId)));
     }
+
+    @Test
+    public void testDoTransferCheckSourceAccountBelongsToUser() throws Exception {
+        TransferRequestBody transferRequestBody = new TransferRequestBody("0", "1", 10.0);
+        when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
+
+        mockMvc.perform(post("/transactions")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .content(mapper.writeValueAsString(transferRequestBody)))
+                .andExpect(status().isAccepted());
+
+        InOrder order = Mockito.inOrder(accountService, transferService);
+        order.verify(accountService).getUserAccount(transferRequestBody.getSourceAccount());
+        order.verify(transferService).doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount());
+    }
+    
 
     /**
      * @see <a href="https://jira.spring.io/browse/SPR-12751">SPR-12751</a>
