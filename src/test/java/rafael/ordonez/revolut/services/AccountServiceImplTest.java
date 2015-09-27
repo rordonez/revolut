@@ -7,6 +7,7 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import rafael.ordonez.revolut.RevolutApplication;
+import rafael.ordonez.revolut.exceptions.InternalAccountNotFoundException;
 import rafael.ordonez.revolut.model.accounts.Account;
 
 import static org.junit.Assert.assertEquals;
@@ -30,5 +31,12 @@ public class AccountServiceImplTest extends AbstractTransactionalJUnit4SpringCon
 
         assertNotNull(userAccount);
         assertEquals(1L, userAccount.getId().longValue());
+    }
+
+    @Test(expected = InternalAccountNotFoundException.class)
+    public void testGetUserAccountNotFound() throws Exception {
+        String accountNumber = "1";
+
+        accountService.getUserAccount(accountNumber);
     }
 }

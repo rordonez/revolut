@@ -40,8 +40,7 @@ public class TransferServiceImpl implements TransferService {
         Account sourceAccount = getAccount(sourceAccountId);
         Account targetAccount = getAccount(targetAccountId);
 
-        AccountTransfer result = transferRepository.save(new AccountTransfer(sourceAccount.getId(), targetAccount.getId(), amount));
-        return transferRepository.findOne(result.getId());
+        return transferRepository.save(new AccountTransfer(sourceAccount.getId(), targetAccount.getId(), amount));
     }
 
     @Override
