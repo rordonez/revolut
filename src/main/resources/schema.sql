@@ -13,7 +13,7 @@ CREATE TABLE if not EXISTS account (
   owner BIGINT NOT NULL,
   alias VARCHAR2(255) NOT NULL,
   accountnumber VARCHAR2(50) NOT NULL,
-  balance BIGINT NOT NULL,
+  balance DECIMAL(20,2) NOT NULL,
   PRIMARY KEY (id),
   FOREIGN KEY (owner) REFERENCES users,
   UNIQUE (accountnumber)

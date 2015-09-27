@@ -5,10 +5,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import rafael.ordonez.revolut.exceptions.AccountNotFoundException;
 import rafael.ordonez.revolut.exceptions.ProcessDuplicatedTransactionException;
 import rafael.ordonez.revolut.exceptions.TransactionNotFoundException;
-import rafael.ordonez.revolut.model.accounts.Account;
 import rafael.ordonez.revolut.model.transactions.AccountTransfer;
 import rafael.ordonez.revolut.model.transactions.AccountTransferStatus;
 import rafael.ordonez.revolut.repositories.AccountRepository;
@@ -37,25 +35,16 @@ public class TransferServiceImpl implements TransferService {
     @Override
     public AccountTransfer doTransfer(long sourceAccountId, long targetAccountId, double amount) {
         LOG.info("Invoking doTransfer service...");
-        Account sourceAccount = getAccount(sourceAccountId);
-        Account targetAccount = getAccount(targetAccountId);
-
-        return transferRepository.save(new AccountTransfer(sourceAccount.getId(), targetAccount.getId(), amount));
-    }
-
-    @Override
-    public AccountTransfer findById(Long id) {
-        LOG.info("Invoking findById service...");
-        return transferRepository.findOne(id);
+        return transferRepository.save(new AccountTransfer(sourceAccountId, targetAccountId, amount));
     }
 
     @Override
     public AccountTransfer processTransfer(long transactionId) {
-        LOG.info("Processing the transaction with id: "+ transactionId);
+        LOG.info("Processing the transaction with id: " + transactionId);
         AccountTransfer transfer = getTransaction(transactionId);
 
-        updateSourceAccount(transfer);
-        updateTargetAccount(transfer);
+        accountRepository.setAmount(-transfer.getAmount(), transfer.getSourceAccountId());
+        accountRepository.setAmount(transfer.getAmount(), transfer.getTargetAccountId());
 
         transfer.setStatus(AccountTransferStatus.COMPLETED);
         return transferRepository.save(transfer);
@@ -70,26 +59,5 @@ public class TransferServiceImpl implements TransferService {
             throw new ProcessDuplicatedTransactionException("The transaction with id: " + transactionId + "has been processed.");
         }
         return transfer;
-    }
-
-    private void updateTargetAccount(AccountTransfer transfer) {
-        Account targetAccount = accountRepository.findOne(transfer.getTargetAccountId());
-        targetAccount.setBalance(targetAccount.getBalance() + transfer.getAmount());
-        accountRepository.save(targetAccount);
-    }
-
-    private void updateSourceAccount(AccountTransfer transfer) {
-        Account sourceAccount = accountRepository.findOne(transfer.getSourceAccountId());
-        sourceAccount.setBalance(sourceAccount.getBalance() - transfer.getAmount());
-        accountRepository.save(sourceAccount);
-    }
-
-    private Account getAccount(long accountId) {
-        Account account = accountRepository.findOne(accountId);
-        if (account == null) {
-            LOG.error("The account with identifier " + accountId + " is not found in the system.");
-            throw new AccountNotFoundException("The account with identifier: " + accountId + " is not found.");
-        }
-        return account;
     }
 }

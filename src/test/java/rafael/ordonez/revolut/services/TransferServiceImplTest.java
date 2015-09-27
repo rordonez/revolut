@@ -7,12 +7,12 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import rafael.ordonez.revolut.RevolutApplication;
-import rafael.ordonez.revolut.exceptions.AccountNotFoundException;
 import rafael.ordonez.revolut.exceptions.ProcessDuplicatedTransactionException;
 import rafael.ordonez.revolut.exceptions.TransactionNotFoundException;
 import rafael.ordonez.revolut.model.transactions.AccountTransfer;
 import rafael.ordonez.revolut.model.transactions.AccountTransferStatus;
 import rafael.ordonez.revolut.repositories.AccountRepository;
+import rafael.ordonez.revolut.repositories.TransferRepository;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -32,6 +32,9 @@ public class TransferServiceImplTest extends AbstractTransactionalJUnit4SpringCo
     @Autowired
     private AccountRepository accountRepository;
 
+    @Autowired
+    private TransferRepository transferRepository;
+
     @Test
     public void testDoTransfer() throws Exception {
         long sourceAccount = 1L;
@@ -40,36 +43,18 @@ public class TransferServiceImplTest extends AbstractTransactionalJUnit4SpringCo
 
         AccountTransfer transfer = transferService.doTransfer(sourceAccount, targetAccount, amount);
 
-        assertNotNull(transferService.findById(transfer.getId()));
+        assertNotNull(transferRepository.findOne(transfer.getId()));
     }
 
     @Test
     public void testFindById() throws Exception {
-        assertNotNull(transferService.findById(1L));
-    }
-
-    @Test(expected = AccountNotFoundException.class)
-    public void testDoTransferThrowAccountNotFoundExceptionIfSourceAccountIsNotFound() throws Exception {
-        long sourceAccount = 10L;
-        long targetAccount = 2L;
-        double amount = 10.0;
-
-        transferService.doTransfer(sourceAccount, targetAccount, amount);
-    }
-
-    @Test(expected = AccountNotFoundException.class)
-    public void testDoTransferThrowAccountNotFoundExceptionIfTargetAccountIsNotFound() throws Exception {
-        long sourceAccount = 1L;
-        long targetAccount = 10L;
-        double amount = 10.0;
-
-        transferService.doTransfer(sourceAccount, targetAccount, amount);
+        assertNotNull(transferRepository.findOne(1L));
     }
 
     @Test
     public void testProcessTransaction() throws Exception {
         long transactionId = 1L;
-        AccountTransfer pendingTransfer = transferService.findById(transactionId);
+        AccountTransfer pendingTransfer = transferRepository.findOne(transactionId);
         double sourceAccountBalance = accountRepository.findOne(pendingTransfer.getSourceAccountId()).getBalance();
         double targetAccountBalance = accountRepository.findOne(pendingTransfer.getTargetAccountId()).getBalance();
 

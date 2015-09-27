@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import rafael.ordonez.revolut.exceptions.InternalAccountNotFoundException;
+import rafael.ordonez.revolut.exceptions.TransactionNotImplementedException;
 import rafael.ordonez.revolut.model.accounts.Account;
 import rafael.ordonez.revolut.repositories.AccountRepository;
 
@@ -37,6 +38,9 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public Account getInternalAccount(String accountNumber) {
         Account targetAccount = accountRepository.findByAccountNumber(accountNumber);
+        if (targetAccount == null) {
+            throw new TransactionNotImplementedException("The external transactions are not implemented yet.");
+        }
         return targetAccount;
     }
 }

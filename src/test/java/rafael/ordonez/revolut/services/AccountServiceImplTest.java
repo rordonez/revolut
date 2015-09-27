@@ -8,6 +8,7 @@ import org.springframework.test.context.junit4.AbstractTransactionalJUnit4Spring
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import rafael.ordonez.revolut.RevolutApplication;
 import rafael.ordonez.revolut.exceptions.InternalAccountNotFoundException;
+import rafael.ordonez.revolut.exceptions.TransactionNotImplementedException;
 import rafael.ordonez.revolut.model.accounts.Account;
 
 import static org.junit.Assert.assertEquals;
@@ -49,5 +50,12 @@ public class AccountServiceImplTest extends AbstractTransactionalJUnit4SpringCon
 
         assertNotNull(targetAccount);
         assertEquals(2L, targetAccount.getId().longValue());
+    }
+
+    @Test(expected = TransactionNotImplementedException.class)
+    public void testAccountIsNotInternal() throws Exception {
+        String accountNumber = "10";
+
+        accountService.getInternalAccount(accountNumber);
     }
 }
