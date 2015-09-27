@@ -39,4 +39,15 @@ public class AccountServiceImplTest extends AbstractTransactionalJUnit4SpringCon
 
         accountService.getUserAccount(accountNumber);
     }
+
+
+    @Test
+    public void testGetInternalAccount() throws Exception {
+        String accountNumber = "1";
+
+        Account targetAccount = accountService.getInternalAccount(accountNumber);
+
+        assertNotNull(targetAccount);
+        assertEquals(2L, targetAccount.getId().longValue());
+    }
 }

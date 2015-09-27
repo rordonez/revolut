@@ -36,6 +36,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public Account getInternalAccount(String accountNumber) {
-        return null;
+        Account targetAccount = accountRepository.findByAccountNumber(accountNumber);
+        return targetAccount;
     }
 }

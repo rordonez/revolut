@@ -13,4 +13,6 @@ public interface AccountRepository extends CrudRepository<Account, Long> {
 
     @Query("select a from Account a where  a.owner = ?1 and a.accountNumber = ?2")
     Account findByAccountNumber(long userId, String accountNumber);
+
+    Account findByAccountNumber(String accountNumber);
 }
