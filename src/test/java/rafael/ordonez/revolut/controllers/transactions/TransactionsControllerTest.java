@@ -92,7 +92,7 @@ public class TransactionsControllerTest {
     }
 
     @Test
-    public void testTransferServiceIsInvoked() throws Exception {
+    public void testDoTransferCheckBehaviour() throws Exception {
         TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
         when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
         when(accountService.isInternal(transferRequestBody.getTargetAccount())).thenReturn(true);
@@ -102,7 +102,10 @@ public class TransactionsControllerTest {
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .content(mapper.writeValueAsString(transferRequestBody)));
 
-        verify(transferService).doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount());
+        InOrder order = Mockito.inOrder(accountService, transferService);
+        order.verify(accountService).getUserAccount(transferRequestBody.getSourceAccount());
+        order.verify(accountService).isInternal(transferRequestBody.getTargetAccount());
+        order.verify(transferService).doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount());
     }
 
     @Test
@@ -212,24 +215,6 @@ public class TransactionsControllerTest {
     }
 
     @Test
-    public void testDoTransferCheckSourceAccountBelongsToUser() throws Exception {
-        TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
-        when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
-        when(accountService.isInternal(transferRequestBody.getTargetAccount())).thenReturn(true);
-
-        mockMvc.perform(post("/transactions")
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .content(mapper.writeValueAsString(transferRequestBody)))
-                .andExpect(status().isAccepted());
-
-        InOrder order = Mockito.inOrder(accountService, transferService);
-        order.verify(accountService).getUserAccount(transferRequestBody.getSourceAccount());
-        order.verify(transferService).doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount());
-    }
-
-
-    @Test
     public void testDoTransferSourceAccountDoesNotBelongToCurrentUser() throws Exception {
         TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
         when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
@@ -243,23 +228,7 @@ public class TransactionsControllerTest {
                 .andExpect(jsonPath("$.message", is("The source account with number: " + transferRequestBody.getSourceAccount() + " does not belong to the current user")));
     }
 
-    @Test
-    public void testDoTransferCheckTargetAccountNumberIsInternal() throws Exception {
-        TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
-        when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
-        when(accountService.isInternal(transferRequestBody.getTargetAccount())).thenReturn(true);
 
-        mockMvc.perform(post("/transactions")
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .content(mapper.writeValueAsString(transferRequestBody)))
-                .andExpect(status().isAccepted());
-
-        InOrder order = Mockito.inOrder(accountService, transferService);
-        order.verify(accountService).getUserAccount(transferRequestBody.getSourceAccount());
-        order.verify(accountService).isInternal(transferRequestBody.getTargetAccount());
-        order.verify(transferService).doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount());
-    }
 
     @Test
     public void testDoTransferForExternalAccountsIsNotImplemented() throws Exception {
