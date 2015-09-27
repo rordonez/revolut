@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import rafael.ordonez.revolut.exceptions.AccountTransferException;
 import rafael.ordonez.revolut.exceptions.InternalAccountNotFoundException;
 import rafael.ordonez.revolut.exceptions.ProcessTransactionException;
 import rafael.ordonez.revolut.exceptions.TransactionNotImplementedException;
@@ -25,7 +24,7 @@ import java.util.stream.Collectors;
 @ControllerAdvice
 public class RevolutControllerAdvice extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler({AccountTransferException.class, ProcessTransactionException.class, InternalAccountNotFoundException.class})
+    @ExceptionHandler({ProcessTransactionException.class, InternalAccountNotFoundException.class})
     @ResponseBody
     public ResponseEntity<ErrorNode> handleBadRequest(Exception e) {
         return new ResponseEntity<>(new ErrorNode(e.getMessage()), generateHeaders(), HttpStatus.BAD_REQUEST);

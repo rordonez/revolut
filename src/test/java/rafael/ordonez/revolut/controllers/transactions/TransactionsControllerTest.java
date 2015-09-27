@@ -21,7 +21,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHan
 import rafael.ordonez.revolut.RevolutApplicationTests;
 import rafael.ordonez.revolut.controllers.errorhandling.RevolutControllerAdvice;
 import rafael.ordonez.revolut.controllers.transactions.beans.TransferRequestBody;
-import rafael.ordonez.revolut.exceptions.AccountTransferException;
 import rafael.ordonez.revolut.exceptions.InternalAccountNotFoundException;
 import rafael.ordonez.revolut.exceptions.ProcessTransactionException;
 import rafael.ordonez.revolut.exceptions.TransactionNotImplementedException;
@@ -78,7 +77,7 @@ public class TransactionsControllerTest {
     }
 
     @Test
-    public void testIfTransactionResourceExists() throws Exception {
+    public void testCreateServiceIsAccepted() throws Exception {
         TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
         when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
         when(accountService.getUserAccount("0")).thenReturn(new Account());
@@ -95,7 +94,6 @@ public class TransactionsControllerTest {
     public void testDoTransferCheckBehaviour() throws Exception {
         TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
         when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
-        when(accountService.isInternal(transferRequestBody.getTargetAccount())).thenReturn(true);
 
         mockMvc.perform(post("/transactions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -124,17 +122,30 @@ public class TransactionsControllerTest {
     }
 
     @Test
-    public void testTransferWithExceptionReturnsErrorMessages() throws Exception {
+    public void testDoTransferSourceAccountDoesNotBelongToCurrentUser() throws Exception {
         TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
-        when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenThrow(new AccountTransferException("Unexpected error in transfer"));
-        when(accountService.isInternal(transferRequestBody.getTargetAccount())).thenReturn(true);
+        when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
+        when(accountService.getUserAccount(transferRequestBody.getSourceAccount())).thenThrow(new InternalAccountNotFoundException("The source account with number: " + transferRequestBody.getSourceAccount() + " does not belong to the current user"));
 
         mockMvc.perform(post("/transactions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .content(mapper.writeValueAsString(transferRequestBody)))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message", is("Unexpected error in transfer")));
+                .andExpect(jsonPath("$.message", is("The source account with number: " + transferRequestBody.getSourceAccount() + " does not belong to the current user")));
+    }
+
+    @Test
+    public void testDoTransferForExternalAccountsIsNotImplemented() throws Exception {
+        TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
+        when(accountService.isInternal(transferRequestBody.getTargetAccount())).thenThrow(new TransactionNotImplementedException("The external transactions are not implemented yet."));
+
+        mockMvc.perform(post("/transactions")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .content(mapper.writeValueAsString(transferRequestBody)))
+                .andExpect(status().isNotImplemented())
+                .andExpect(jsonPath("$.message", is("The external transactions are not implemented yet.")));
     }
 
     @Test
@@ -173,8 +184,6 @@ public class TransactionsControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].message", is("Invalid value for argument amount")));
-
-
     }
 
     @Test
@@ -212,35 +221,6 @@ public class TransactionsControllerTest {
                 .accept(MediaType.APPLICATION_JSON_VALUE))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message", is("Error processing the transfer with id " + transactionId)));
-    }
-
-    @Test
-    public void testDoTransferSourceAccountDoesNotBelongToCurrentUser() throws Exception {
-        TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
-        when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
-        when(accountService.getUserAccount(transferRequestBody.getSourceAccount())).thenThrow(new InternalAccountNotFoundException("The source account with number: " + transferRequestBody.getSourceAccount() + " does not belong to the current user"));
-
-        mockMvc.perform(post("/transactions")
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .content(mapper.writeValueAsString(transferRequestBody)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message", is("The source account with number: " + transferRequestBody.getSourceAccount() + " does not belong to the current user")));
-    }
-
-
-
-    @Test
-    public void testDoTransferForExternalAccountsIsNotImplemented() throws Exception {
-        TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
-        when(accountService.isInternal(transferRequestBody.getTargetAccount())).thenThrow(new TransactionNotImplementedException("The external transactions are not implemented yet."));
-
-        mockMvc.perform(post("/transactions")
-                .contentType(MediaType.APPLICATION_JSON_VALUE)
-                .accept(MediaType.APPLICATION_JSON_VALUE)
-                .content(mapper.writeValueAsString(transferRequestBody)))
-                .andExpect(status().isNotImplemented())
-                .andExpect(jsonPath("$.message", is("The external transactions are not implemented yet.")));
     }
 
     /**
