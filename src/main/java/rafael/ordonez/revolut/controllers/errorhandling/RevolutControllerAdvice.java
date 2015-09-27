@@ -14,6 +14,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 import rafael.ordonez.revolut.exceptions.AccountTransferException;
 import rafael.ordonez.revolut.exceptions.InternalAccountNotFoundException;
 import rafael.ordonez.revolut.exceptions.ProcessTransactionException;
+import rafael.ordonez.revolut.exceptions.TransactionNotImplementedException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,6 +29,12 @@ public class RevolutControllerAdvice extends ResponseEntityExceptionHandler {
     @ResponseBody
     public ResponseEntity<ErrorNode> handleBadRequest(Exception e) {
         return new ResponseEntity<>(new ErrorNode(e.getMessage()), generateHeaders(), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler({TransactionNotImplementedException.class})
+    @ResponseBody
+    public ResponseEntity<ErrorNode> handleNotImplemented(Exception e) {
+        return new ResponseEntity<>(new ErrorNode(e.getMessage()), generateHeaders(), HttpStatus.NOT_IMPLEMENTED);
     }
 
     @Override

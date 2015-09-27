@@ -24,6 +24,7 @@ import rafael.ordonez.revolut.controllers.transactions.beans.TransferRequestBody
 import rafael.ordonez.revolut.exceptions.AccountTransferException;
 import rafael.ordonez.revolut.exceptions.InternalAccountNotFoundException;
 import rafael.ordonez.revolut.exceptions.ProcessTransactionException;
+import rafael.ordonez.revolut.exceptions.TransactionNotImplementedException;
 import rafael.ordonez.revolut.model.transactions.AccountTransfer;
 import rafael.ordonez.revolut.model.transactions.AccountTransferStatus;
 import rafael.ordonez.revolut.services.AccountService;
@@ -259,6 +260,19 @@ public class TransactionsControllerTest {
         order.verify(accountService).getUserAccount(transferRequestBody.getSourceAccount());
         order.verify(accountService).isInternal(transferRequestBody.getTargetAccount());
         order.verify(transferService).doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount());
+    }
+
+    @Test
+    public void testDoTransferForExternalAccountsIsNotImplemented() throws Exception {
+        TransferRequestBody transferRequestBody = new TransferRequestBody("0", "1", 10.0);
+        when(accountService.isInternal(transferRequestBody.getTargetAccount())).thenThrow(new TransactionNotImplementedException("The external transactions are not implemented yet."));
+
+        mockMvc.perform(post("/transactions")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .content(mapper.writeValueAsString(transferRequestBody)))
+                .andExpect(status().isNotImplemented())
+                .andExpect(jsonPath("$.message", is("The external transactions are not implemented yet.")));
     }
 
     /**

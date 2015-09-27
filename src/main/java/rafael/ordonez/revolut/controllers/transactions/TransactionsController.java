@@ -40,12 +40,10 @@ public class TransactionsController {
     {
         LOG.info("Creating a new transfer with source account: " + request.getSourceAccount() + ", target account: " + request.getTargetAccount() + " and amount: " + request.getAmount());
         accountService.getUserAccount(request.getSourceAccount());
-        if (accountService.isInternal(request.getTargetAccount())) {
-            AccountTransfer transfer = transferService.doTransfer(request.getSourceAccount(), request.getTargetAccount(), request.getAmount());
-            Link transferLink = ControllerLinkBuilder.linkTo(this.getClass()).slash(transfer.getId()).withSelfRel();
-            return new ResponseEntity<>(new Resource<>(transfer, transferLink), HttpStatus.ACCEPTED);
-        }
-        return null;
+        accountService.isInternal(request.getTargetAccount());
+        AccountTransfer transfer = transferService.doTransfer(request.getSourceAccount(), request.getTargetAccount(), request.getAmount());
+        Link transferLink = ControllerLinkBuilder.linkTo(this.getClass()).slash(transfer.getId()).withSelfRel();
+        return new ResponseEntity<>(new Resource<>(transfer, transferLink), HttpStatus.ACCEPTED);
     }
 
     @RequestMapping(method = RequestMethod.PUT, value = "/{transferId}")
