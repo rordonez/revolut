@@ -36,7 +36,7 @@ public class TransactionsController {
     }
 
     @RequestMapping(method = RequestMethod.POST)
-    public ResponseEntity<Resource<AccountTransfer>> createTransfer(@Valid @RequestBody TransferRequestBody request)
+    public ResponseEntity<Resource<AccountTransfer>> createTransaction(@Valid @RequestBody TransferRequestBody request)
     {
         LOG.info("Creating a new transfer with source account: " + request.getSourceAccount() + ", target account: " + request.getTargetAccount() + " and amount: " + request.getAmount());
         accountService.getUserAccount(request.getSourceAccount());

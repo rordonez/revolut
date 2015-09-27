@@ -76,8 +76,14 @@ public class TransactionsControllerTest {
                 .build();
     }
 
+    /*
+     *   -------------------------------------
+     *   - CREATE TRANSACTION TESTS -
+     *   -------------------------------------
+     */
+
     @Test
-    public void testCreateServiceIsAccepted() throws Exception {
+    public void testCreateTransaction() throws Exception {
         TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
         when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
         when(accountService.getUserAccount("0")).thenReturn(new Account());
@@ -91,7 +97,7 @@ public class TransactionsControllerTest {
     }
 
     @Test
-    public void testDoTransferCheckBehaviour() throws Exception {
+    public void testCreateTransactionCheckBehaviour() throws Exception {
         TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
         when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
 
@@ -107,7 +113,7 @@ public class TransactionsControllerTest {
     }
 
     @Test
-    public void testTransferResponseHasALinkToItself() throws Exception {
+    public void testCreateTransactionResponseHasALinkToItself() throws Exception {
         TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
         when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(stubbedTransfer(0L, 1L, transferRequestBody.getAmount()));
         when(accountService.isInternal(transferRequestBody.getTargetAccount())).thenReturn(true);
@@ -121,10 +127,14 @@ public class TransactionsControllerTest {
                 .andExpect(jsonPath("$.links[0].rel", is("self")));
     }
 
+    /*
+     *   -------------------------------------------
+     *   - Create Internal Transfer Error Handling -
+     *   -------------------------------------------
+     */
     @Test
-    public void testDoTransferSourceAccountDoesNotBelongToCurrentUser() throws Exception {
+    public void testCreateTransactionSourceAccountDoesNotBelongToCurrentUser() throws Exception {
         TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
-        when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
         when(accountService.getUserAccount(transferRequestBody.getSourceAccount())).thenThrow(new InternalAccountNotFoundException("The source account with number: " + transferRequestBody.getSourceAccount() + " does not belong to the current user"));
 
         mockMvc.perform(post("/transactions")
@@ -136,7 +146,7 @@ public class TransactionsControllerTest {
     }
 
     @Test
-    public void testDoTransferForExternalAccountsIsNotImplemented() throws Exception {
+    public void testCreateTransactionForExternalAccountsIsNotImplemented() throws Exception {
         TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
         when(accountService.isInternal(transferRequestBody.getTargetAccount())).thenThrow(new TransactionNotImplementedException("The external transactions are not implemented yet."));
 
@@ -148,8 +158,13 @@ public class TransactionsControllerTest {
                 .andExpect(jsonPath("$.message", is("The external transactions are not implemented yet.")));
     }
 
+    /*
+     *   ----------------------------------------------------
+     *   - Create Internal Transfer Input Validations Tests -
+     *   ----------------------------------------------------
+     */
     @Test
-    public void testTransferWithNullSourceAccount() throws Exception {
+    public void testCreateTransactionWithNullSourceAccount() throws Exception {
         TransferRequestBody transferRequestBody = createTransferRequestBody(null, "1", 10.0);
 
         mockMvc.perform(post("/transactions")
@@ -162,7 +177,7 @@ public class TransactionsControllerTest {
     }
 
     @Test
-    public void testTransferWithBothAccountsNull() throws Exception {
+    public void testCreateTransactionWithBothAccountsNull() throws Exception {
         TransferRequestBody transferRequestBody = createTransferRequestBody(null, null, 10.0);
 
         mockMvc.perform(post("/transactions")
@@ -174,7 +189,7 @@ public class TransactionsControllerTest {
     }
 
     @Test
-    public void testCreateTransferWithPositiveAmount() throws Exception {
+    public void testCreateTransactionWithNegativeAmount() throws Exception {
         TransferRequestBody transferRequestBody = createTransferRequestBody("1", "2", -1);
 
         mockMvc.perform(post("/transactions")
@@ -185,6 +200,13 @@ public class TransactionsControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].message", is("Invalid value for argument amount")));
     }
+
+
+    /*
+     *   ----------------------------------------------------
+     *   - PROCESS TRANSACTION TESTS -
+     *   ----------------------------------------------------
+     */
 
     @Test
     public void testProcessTransaction() throws Exception {
