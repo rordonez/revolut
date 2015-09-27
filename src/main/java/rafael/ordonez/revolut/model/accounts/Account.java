@@ -18,6 +18,9 @@ public class Account implements Identifiable<Long>, Serializable {
     @GeneratedValue
     private Long id;
 
+    @Column(name = "owner")
+    private Long owner;
+
     @Column(name = "alias")
     private String alias;
 
@@ -46,5 +49,9 @@ public class Account implements Identifiable<Long>, Serializable {
 
     public void setBalance(double balance) {
         this.balance = balance;
+    }
+
+    public Long getOwner() {
+        return owner;
     }
 }

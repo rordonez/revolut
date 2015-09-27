@@ -1,5 +1,6 @@
 package rafael.ordonez.revolut.controllers.transactions;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
@@ -100,8 +101,12 @@ public class TransactionsControllerTest {
         mockMvc.perform(post("/transactions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
-                .content(mapper.writeValueAsString(transferRequestBody)))
+                .content(getJson(transferRequestBody)))
                 .andExpect(status().isAccepted());
+    }
+
+    private String getJson(TransferRequestBody transferRequestBody) throws JsonProcessingException {
+        return mapper.writeValueAsString(transferRequestBody);
     }
 
     @Test
@@ -114,7 +119,7 @@ public class TransactionsControllerTest {
         mockMvc.perform(post("/transactions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
-                .content(mapper.writeValueAsString(transferRequestBody)));
+                .content(getJson(transferRequestBody)));
 
         InOrder order = Mockito.inOrder(accountService, transferService);
         order.verify(accountService).getUserAccount(transferRequestBody.getSourceAccount());
@@ -132,7 +137,7 @@ public class TransactionsControllerTest {
         mockMvc.perform(post("/transactions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
-                .content(mapper.writeValueAsString(transferRequestBody)))
+                .content(getJson(transferRequestBody)))
                 .andExpect(jsonPath("$.links", hasSize(1)))
                 .andExpect(jsonPath("$.links[0].href", endsWith("/transactions/" + stubbedTransfer(sourceAccount.getId(), targetAccount.getId(), transferRequestBody.getAmount()).getId())))
                 .andExpect(jsonPath("$.links[0].rel", is("self")));
@@ -151,7 +156,7 @@ public class TransactionsControllerTest {
         mockMvc.perform(post("/transactions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
-                .content(mapper.writeValueAsString(transferRequestBody)))
+                .content(getJson(transferRequestBody)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message", is("The source account with number: " + transferRequestBody.getSourceAccount() + " does not belong to the current user")));
     }
@@ -164,7 +169,7 @@ public class TransactionsControllerTest {
         mockMvc.perform(post("/transactions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
-                .content(mapper.writeValueAsString(transferRequestBody)))
+                .content(getJson(transferRequestBody)))
                 .andExpect(status().isNotImplemented())
                 .andExpect(jsonPath("$.message", is("The external transactions are not implemented yet.")));
     }
@@ -181,7 +186,7 @@ public class TransactionsControllerTest {
         mockMvc.perform(post("/transactions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
-                .content(mapper.writeValueAsString(transferRequestBody)))
+                .content(getJson(transferRequestBody)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].message", is("Invalid value for argument sourceAccount")));
@@ -194,7 +199,7 @@ public class TransactionsControllerTest {
         mockMvc.perform(post("/transactions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
-                .content(mapper.writeValueAsString(transferRequestBody)))
+                .content(getJson(transferRequestBody)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$", hasSize(2)));
     }
@@ -206,7 +211,7 @@ public class TransactionsControllerTest {
         mockMvc.perform(post("/transactions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
-                .content(mapper.writeValueAsString(transferRequestBody)))
+                .content(getJson(transferRequestBody)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].message", is("Invalid value for argument amount")));
