@@ -61,6 +61,12 @@ public class TransactionsControllerTest {
     @Mock
     private AccountService accountService;
 
+    @Mock
+    private Account sourceAccount;
+
+    @Mock
+    private Account targetAccount;
+
     @InjectMocks
     private TransactionsController transactionsController;
 
@@ -74,6 +80,8 @@ public class TransactionsControllerTest {
                 .standaloneSetup(transactionsController)
                 .setHandlerExceptionResolvers(createExceptionResolver())
                 .build();
+        when(sourceAccount.getId()).thenReturn(0L);
+        when(targetAccount.getId()).thenReturn(1L);
     }
 
     /*
@@ -85,9 +93,9 @@ public class TransactionsControllerTest {
     @Test
     public void testCreateTransaction() throws Exception {
         TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
-        when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
-        when(accountService.getUserAccount("0")).thenReturn(new Account());
-        when(accountService.isInternal(transferRequestBody.getTargetAccount())).thenReturn(true);
+        when(transferService.doTransfer(sourceAccount.getId(), targetAccount.getId(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
+        when(accountService.getUserAccount(transferRequestBody.getSourceAccount())).thenReturn(sourceAccount);
+        when(accountService.getInternalAccount(transferRequestBody.getTargetAccount())).thenReturn(targetAccount);
 
         mockMvc.perform(post("/transactions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -99,7 +107,9 @@ public class TransactionsControllerTest {
     @Test
     public void testCreateTransactionCheckBehaviour() throws Exception {
         TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
-        when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
+        when(transferService.doTransfer(sourceAccount.getId(), targetAccount.getId(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
+        when(accountService.getUserAccount(transferRequestBody.getSourceAccount())).thenReturn(sourceAccount);
+        when(accountService.getInternalAccount(transferRequestBody.getTargetAccount())).thenReturn(targetAccount);
 
         mockMvc.perform(post("/transactions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -108,22 +118,23 @@ public class TransactionsControllerTest {
 
         InOrder order = Mockito.inOrder(accountService, transferService);
         order.verify(accountService).getUserAccount(transferRequestBody.getSourceAccount());
-        order.verify(accountService).isInternal(transferRequestBody.getTargetAccount());
-        order.verify(transferService).doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount());
+        order.verify(accountService).getInternalAccount(transferRequestBody.getTargetAccount());
+        order.verify(transferService).doTransfer(sourceAccount.getId(), targetAccount.getId(), transferRequestBody.getAmount());
     }
 
     @Test
     public void testCreateTransactionResponseHasALinkToItself() throws Exception {
         TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
-        when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(stubbedTransfer(0L, 1L, transferRequestBody.getAmount()));
-        when(accountService.isInternal(transferRequestBody.getTargetAccount())).thenReturn(true);
+        when(transferService.doTransfer(sourceAccount.getId(), targetAccount.getId(), transferRequestBody.getAmount())).thenReturn(stubbedTransfer(0L, 1L, transferRequestBody.getAmount()));
+        when(accountService.getInternalAccount(transferRequestBody.getTargetAccount())).thenReturn(targetAccount);
+        when(accountService.getUserAccount(transferRequestBody.getSourceAccount())).thenReturn(sourceAccount);
 
         mockMvc.perform(post("/transactions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .content(mapper.writeValueAsString(transferRequestBody)))
                 .andExpect(jsonPath("$.links", hasSize(1)))
-                .andExpect(jsonPath("$.links[0].href", endsWith("/transactions/" + stubbedTransfer(0L, 1L, transferRequestBody.getAmount()).getId())))
+                .andExpect(jsonPath("$.links[0].href", endsWith("/transactions/" + stubbedTransfer(sourceAccount.getId(), targetAccount.getId(), transferRequestBody.getAmount()).getId())))
                 .andExpect(jsonPath("$.links[0].rel", is("self")));
     }
 
@@ -148,7 +159,7 @@ public class TransactionsControllerTest {
     @Test
     public void testCreateTransactionForExternalAccountsIsNotImplemented() throws Exception {
         TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
-        when(accountService.isInternal(transferRequestBody.getTargetAccount())).thenThrow(new TransactionNotImplementedException("The external transactions are not implemented yet."));
+        when(accountService.getInternalAccount(transferRequestBody.getTargetAccount())).thenThrow(new TransactionNotImplementedException("The external transactions are not implemented yet."));
 
         mockMvc.perform(post("/transactions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)

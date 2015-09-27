@@ -9,6 +9,6 @@ public interface AccountService {
 
     Account getUserAccount(String accountNumber);
 
-    boolean isInternal(String accountNumber);
+    Account getInternalAccount(String accountNumber);
 
 }

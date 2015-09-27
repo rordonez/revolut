@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import rafael.ordonez.revolut.controllers.transactions.beans.TransferRequestBody;
+import rafael.ordonez.revolut.model.accounts.Account;
 import rafael.ordonez.revolut.model.transactions.AccountTransfer;
 import rafael.ordonez.revolut.services.AccountService;
 import rafael.ordonez.revolut.services.TransferService;
@@ -39,9 +40,9 @@ public class TransactionsController {
     public ResponseEntity<Resource<AccountTransfer>> createTransaction(@Valid @RequestBody TransferRequestBody request)
     {
         LOG.info("Creating a new transfer with source account: " + request.getSourceAccount() + ", target account: " + request.getTargetAccount() + " and amount: " + request.getAmount());
-        accountService.getUserAccount(request.getSourceAccount());
-        accountService.isInternal(request.getTargetAccount());
-        AccountTransfer transfer = transferService.doTransfer(request.getSourceAccount(), request.getTargetAccount(), request.getAmount());
+        Account sourceAccount = accountService.getUserAccount(request.getSourceAccount());
+        Account targetAccount = accountService.getInternalAccount(request.getTargetAccount());
+        AccountTransfer transfer = transferService.doTransfer(sourceAccount.getId(), targetAccount.getId(), request.getAmount());
         Link transferLink = ControllerLinkBuilder.linkTo(this.getClass()).slash(transfer.getId()).withSelfRel();
         return new ResponseEntity<>(new Resource<>(transfer, transferLink), HttpStatus.ACCEPTED);
     }

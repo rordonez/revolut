@@ -34,8 +34,8 @@ public class TransferServiceImplTest extends AbstractTransactionalJUnit4SpringCo
 
     @Test
     public void testDoTransfer() throws Exception {
-        String sourceAccount = "0";
-        String targetAccount = "1";
+        long sourceAccount = 1L;
+        long targetAccount = 2L;
         double amount = 10.0;
 
         AccountTransfer transfer = transferService.doTransfer(sourceAccount, targetAccount, amount);
@@ -50,8 +50,8 @@ public class TransferServiceImplTest extends AbstractTransactionalJUnit4SpringCo
 
     @Test(expected = AccountNotFoundException.class)
     public void testDoTransferThrowAccountNotFoundExceptionIfSourceAccountIsNotFound() throws Exception {
-        String sourceAccount = "10";
-        String targetAccount = "1";
+        long sourceAccount = 10L;
+        long targetAccount = 2L;
         double amount = 10.0;
 
         transferService.doTransfer(sourceAccount, targetAccount, amount);
@@ -59,8 +59,8 @@ public class TransferServiceImplTest extends AbstractTransactionalJUnit4SpringCo
 
     @Test(expected = AccountNotFoundException.class)
     public void testDoTransferThrowAccountNotFoundExceptionIfTargetAccountIsNotFound() throws Exception {
-        String sourceAccount = "0";
-        String targetAccount = "10";
+        long sourceAccount = 1L;
+        long targetAccount = 10L;
         double amount = 10.0;
 
         transferService.doTransfer(sourceAccount, targetAccount, amount);
