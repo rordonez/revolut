@@ -40,10 +40,6 @@ public class Account implements Identifiable<Long>, Serializable {
         return accountNumber;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
     public double getBalance() {
         return balance;
     }

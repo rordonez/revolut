@@ -25,6 +25,7 @@ import rafael.ordonez.revolut.exceptions.AccountTransferException;
 import rafael.ordonez.revolut.exceptions.InternalAccountNotFoundException;
 import rafael.ordonez.revolut.exceptions.ProcessTransactionException;
 import rafael.ordonez.revolut.exceptions.TransactionNotImplementedException;
+import rafael.ordonez.revolut.model.accounts.Account;
 import rafael.ordonez.revolut.model.transactions.AccountTransfer;
 import rafael.ordonez.revolut.model.transactions.AccountTransferStatus;
 import rafael.ordonez.revolut.services.AccountService;
@@ -78,8 +79,9 @@ public class TransactionsControllerTest {
 
     @Test
     public void testIfTransactionResourceExists() throws Exception {
-        TransferRequestBody transferRequestBody = new TransferRequestBody("0", "1", 10.0);
+        TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
         when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
+        when(accountService.getUserAccount("0")).thenReturn(new Account());
         when(accountService.isInternal(transferRequestBody.getTargetAccount())).thenReturn(true);
 
         mockMvc.perform(post("/transactions")
@@ -91,7 +93,7 @@ public class TransactionsControllerTest {
 
     @Test
     public void testTransferServiceIsInvoked() throws Exception {
-        TransferRequestBody transferRequestBody = new TransferRequestBody("0", "1", 10.0);
+        TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
         when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
         when(accountService.isInternal(transferRequestBody.getTargetAccount())).thenReturn(true);
 
@@ -105,11 +107,8 @@ public class TransactionsControllerTest {
 
     @Test
     public void testTransferResponseHasALinkToItself() throws Exception {
-        String sourceAccount = "0";
-        String targetAccount = "1";
-        double amount = 10.0;
-        TransferRequestBody transferRequestBody = new TransferRequestBody(sourceAccount, targetAccount, amount);
-        when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(stubbedTransfer(0L, 1L, amount));
+        TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
+        when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(stubbedTransfer(0L, 1L, transferRequestBody.getAmount()));
         when(accountService.isInternal(transferRequestBody.getTargetAccount())).thenReturn(true);
 
         mockMvc.perform(post("/transactions")
@@ -117,13 +116,13 @@ public class TransactionsControllerTest {
                 .accept(MediaType.APPLICATION_JSON_VALUE)
                 .content(mapper.writeValueAsString(transferRequestBody)))
                 .andExpect(jsonPath("$.links", hasSize(1)))
-                .andExpect(jsonPath("$.links[0].href", endsWith("/transactions/" + stubbedTransfer(0L, 1L, amount).getId())))
+                .andExpect(jsonPath("$.links[0].href", endsWith("/transactions/" + stubbedTransfer(0L, 1L, transferRequestBody.getAmount()).getId())))
                 .andExpect(jsonPath("$.links[0].rel", is("self")));
     }
 
     @Test
     public void testTransferWithExceptionReturnsErrorMessages() throws Exception {
-        TransferRequestBody transferRequestBody = new TransferRequestBody("0", "1", 10.0);
+        TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
         when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenThrow(new AccountTransferException("Unexpected error in transfer"));
         when(accountService.isInternal(transferRequestBody.getTargetAccount())).thenReturn(true);
 
@@ -137,7 +136,7 @@ public class TransactionsControllerTest {
 
     @Test
     public void testTransferWithNullSourceAccount() throws Exception {
-        TransferRequestBody transferRequestBody = new TransferRequestBody(null, "1", 10.0);
+        TransferRequestBody transferRequestBody = createTransferRequestBody(null, "1", 10.0);
 
         mockMvc.perform(post("/transactions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -150,7 +149,7 @@ public class TransactionsControllerTest {
 
     @Test
     public void testTransferWithBothAccountsNull() throws Exception {
-        TransferRequestBody transferRequestBody = new TransferRequestBody(null, null, 10.0);
+        TransferRequestBody transferRequestBody = createTransferRequestBody(null, null, 10.0);
 
         mockMvc.perform(post("/transactions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -162,7 +161,7 @@ public class TransactionsControllerTest {
 
     @Test
     public void testCreateTransferWithPositiveAmount() throws Exception {
-        TransferRequestBody transferRequestBody = new TransferRequestBody("1", "2", -1);
+        TransferRequestBody transferRequestBody = createTransferRequestBody("1", "2", -1);
 
         mockMvc.perform(post("/transactions")
                 .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -214,7 +213,7 @@ public class TransactionsControllerTest {
 
     @Test
     public void testDoTransferCheckSourceAccountBelongsToUser() throws Exception {
-        TransferRequestBody transferRequestBody = new TransferRequestBody("0", "1", 10.0);
+        TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
         when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
         when(accountService.isInternal(transferRequestBody.getTargetAccount())).thenReturn(true);
 
@@ -232,7 +231,7 @@ public class TransactionsControllerTest {
 
     @Test
     public void testDoTransferSourceAccountDoesNotBelongToCurrentUser() throws Exception {
-        TransferRequestBody transferRequestBody = new TransferRequestBody("0", "1", 10.0);
+        TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
         when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
         when(accountService.getUserAccount(transferRequestBody.getSourceAccount())).thenThrow(new InternalAccountNotFoundException("The source account with number: " + transferRequestBody.getSourceAccount() + " does not belong to the current user"));
 
@@ -246,7 +245,7 @@ public class TransactionsControllerTest {
 
     @Test
     public void testDoTransferCheckTargetAccountNumberIsInternal() throws Exception {
-        TransferRequestBody transferRequestBody = new TransferRequestBody("0", "1", 10.0);
+        TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
         when(transferService.doTransfer(transferRequestBody.getSourceAccount(), transferRequestBody.getTargetAccount(), transferRequestBody.getAmount())).thenReturn(new AccountTransfer());
         when(accountService.isInternal(transferRequestBody.getTargetAccount())).thenReturn(true);
 
@@ -264,7 +263,7 @@ public class TransactionsControllerTest {
 
     @Test
     public void testDoTransferForExternalAccountsIsNotImplemented() throws Exception {
-        TransferRequestBody transferRequestBody = new TransferRequestBody("0", "1", 10.0);
+        TransferRequestBody transferRequestBody = createTransferRequestBody("0", "1", 10.0);
         when(accountService.isInternal(transferRequestBody.getTargetAccount())).thenThrow(new TransactionNotImplementedException("The external transactions are not implemented yet."));
 
         mockMvc.perform(post("/transactions")
@@ -290,6 +289,10 @@ public class TransactionsControllerTest {
         exceptionResolver.afterPropertiesSet();
         exceptionResolver.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
         return exceptionResolver;
+    }
+
+    private TransferRequestBody createTransferRequestBody(String sourceAccountNumber, String targetAccountNumber, double amount) {
+        return new TransferRequestBody(sourceAccountNumber, targetAccountNumber, amount);
     }
 
     private static AccountTransfer stubbedTransfer(Long sourceAccount, Long targetAccount, double amount) {
