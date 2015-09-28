@@ -217,6 +217,18 @@ public class TransactionsControllerTest {
                 .andExpect(jsonPath("$[0].message", is("Invalid value for argument amount")));
     }
 
+    @Test
+    public void testCreateTransactionSourceAndTargetAccountsMustBeDifferent() throws Exception {
+        TransferRequestBody transferRequestBody = createTransferRequestBody("1", "1", 1);
+
+        mockMvc.perform(post("/transactions")
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .accept(MediaType.APPLICATION_JSON_VALUE)
+                .content(getJson(transferRequestBody)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].message", is("Invalid value for argument sourceAccount")));
+    }
 
     /*
      *   ----------------------------------------------------

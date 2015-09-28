@@ -8,8 +8,10 @@ import org.springframework.hateoas.Resource;
 import org.springframework.hateoas.mvc.ControllerLinkBuilder;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import rafael.ordonez.revolut.controllers.transactions.beans.TransferRequestBody;
+import rafael.ordonez.revolut.controllers.transactions.validator.TransferRequestBodyValidator;
 import rafael.ordonez.revolut.model.accounts.Account;
 import rafael.ordonez.revolut.model.transactions.AccountTransfer;
 import rafael.ordonez.revolut.services.AccountService;
@@ -34,6 +36,11 @@ public class TransactionsController {
     public TransactionsController(TransferService transferService, AccountService accountService) {
         this.transferService = transferService;
         this.accountService = accountService;
+    }
+
+    @InitBinder
+    protected void initBinder(WebDataBinder binder) {
+        binder.setValidator(new TransferRequestBodyValidator());
     }
 
     @RequestMapping(method = RequestMethod.POST)

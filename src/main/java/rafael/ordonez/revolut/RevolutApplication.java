@@ -13,4 +13,5 @@ public class RevolutApplication {
     public static void main(String[] args) {
         SpringApplication.run(RevolutApplication.class, args);
     }
+
 }
