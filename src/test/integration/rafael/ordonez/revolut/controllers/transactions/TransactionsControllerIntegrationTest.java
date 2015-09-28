@@ -79,8 +79,7 @@ public class TransactionsControllerIntegrationTest {
                 .content(mapper.writeValueAsString(transferRequestBody)))
 
                 .andExpect(jsonPath("$._links.self.href", endsWith("transactions/2")))
-                .andExpect(jsonPath("$.status", is(AccountTransferStatus.PENDING.toString())))
-                .andReturn();
+                .andExpect(jsonPath("$.status", is(AccountTransferStatus.PENDING.toString())));
 
 
         mockMvc.perform(put("/transactions/1000")
@@ -88,6 +87,17 @@ public class TransactionsControllerIntegrationTest {
                 .andExpect(jsonPath("$.message", is("The transaction with id: 1000 is not found.")));
     }
 
+    @Test
+    public void testNoMoneyProblemsIsNotPosibleBuyLottery() throws Exception {
+        TransferRequestBody transferRequestBody = new TransferRequestBody("1", "0", 10.0);
+
+        mockMvc.perform(post("/transactions")
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .content(mapper.writeValueAsString(transferRequestBody)))
+                .andExpect(jsonPath("$.message", is("The source account with number: 1 does not belong to the current user")));
+
+    }
 
     private long findTransactionId(String response) {
         long result = 0;
