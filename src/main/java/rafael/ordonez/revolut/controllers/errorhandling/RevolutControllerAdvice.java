@@ -44,7 +44,7 @@ public class RevolutControllerAdvice extends ResponseEntityExceptionHandler {
     private List<ErrorNode> getErrors(MethodArgumentNotValidException ex) {
         return ex.getBindingResult().getAllErrors()
                 .stream()
-                .map(x -> new ErrorNode("Invalid value for argument " + ((FieldError) x).getField()))
+                .map(x -> new ErrorNode("Invalid value for argument " + ((FieldError) x).getField() + " and description: " + x.getDefaultMessage()))
                 .collect(Collectors.toList());
     }
 

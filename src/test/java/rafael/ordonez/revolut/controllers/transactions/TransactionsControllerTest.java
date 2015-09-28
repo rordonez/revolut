@@ -189,7 +189,7 @@ public class TransactionsControllerTest {
                 .content(getJson(transferRequestBody)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].message", is("Invalid value for argument sourceAccount")));
+                .andExpect(jsonPath("$[0].message", is("Invalid value for argument sourceAccount and description: Source account number is null or empty")));
     }
 
     @Test
@@ -214,7 +214,7 @@ public class TransactionsControllerTest {
                 .content(getJson(transferRequestBody)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].message", is("Invalid value for argument amount")));
+                .andExpect(jsonPath("$[0].message", is("Invalid value for argument amount and description: Amount can not be negative")));
     }
 
     @Test
@@ -227,7 +227,7 @@ public class TransactionsControllerTest {
                 .content(getJson(transferRequestBody)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].message", is("Invalid value for argument sourceAccount")));
+                .andExpect(jsonPath("$[0].message", is("Invalid value for argument sourceAccount and description: Source and target account must be different")));
     }
 
     /*

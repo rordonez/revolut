@@ -1,5 +1,6 @@
 package rafael.ordonez.revolut.controllers.transactions.validator;
 
+import org.springframework.util.StringUtils;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import rafael.ordonez.revolut.controllers.transactions.beans.TransferRequestBody;
@@ -19,8 +20,18 @@ public class TransferRequestBodyValidator implements Validator {
     @Override
     public void validate(Object target, Errors errors) {
         TransferRequestBody transferRequestBody = (TransferRequestBody) target;
-        if(transferRequestBody.getSourceAccount().equals(transferRequestBody.getTargetAccount())) {
-            errors.rejectValue("sourceAccount", "sourceAccount.same");
+
+        if(StringUtils.isEmpty(transferRequestBody.getSourceAccount())) {
+            errors.rejectValue("sourceAccount", "sourceAccount.empty", "Source account number is null or empty");
+        }
+        if(StringUtils.isEmpty(transferRequestBody.getTargetAccount())) {
+            errors.rejectValue("targetAccount", "targetAccount.empty", "Target account number is null or empty");
+        }
+        if(transferRequestBody.getAmount() < 0) {
+            errors.rejectValue("amount", "amount.negative", "Amount can not be negative");
+        }
+        if(transferRequestBody.getSourceAccount() != null && transferRequestBody.getSourceAccount().equals(transferRequestBody.getTargetAccount())) {
+            errors.rejectValue("sourceAccount", "sourceAccount.same", "Source and target account must be different");
         }
     }
 }
