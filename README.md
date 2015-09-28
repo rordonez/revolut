@@ -62,7 +62,13 @@ Fields description:
 
 Output:
 ```json
-{}
+{
+	"status":"PENDING",
+	"_links":
+		{"self":
+			{"href":"http://localhost:8080/transactions/2"}
+		}
+}
 ```
 
 Error codes:
@@ -94,7 +100,14 @@ curl -H "Content-Type : application/json" -X PUT http://localhost:8080/transacti
 Output:
 
 ```json
-{}
+{
+	"status":"COMPLETED",
+	"_links":{
+		"self":{
+			"href":"http://localhost:8080/transactions/2"
+		}
+	}
+}
 ```
 
 Error codes:
