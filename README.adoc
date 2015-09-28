@@ -23,7 +23,7 @@ This project also includes Unit tests and Integration tests. The approach is to 
 
 == REST API implementation
 
-The REST APIs provide programmatic access to create new transfers. The functionality present is very basic, it is only posible to do internal transactions, that is make a trasfer within the system.
+The REST APIs provide programmatic access to create new transfers. The functionality defined is very basic, it is only posible to make internal transactions, that is make a trasfer within the system.
 
 === Resources
 
@@ -31,21 +31,25 @@ The only resource defined is _transactions_.
 
 === Content Negotiation
 
-For content negotiation, by default it uses the value of the Accept Header. The could change this configuration as needed, using for example a URI suffix and additional request parameter or a customized HTTP header.
+For content negotiation, by default it uses the value of the *Accept Header*. The could change this configuration as needed, using for example a URI suffix and additional request parameter or a customized HTTP header.
 
 === Operations
 
-**POST /transactions**
+==== POST /transactions
 
-Request Body
+**Request Body**
 
 ```json
-{"sourceAccount": "<source account number>","targetAccount": "<target account number>","amount": <amount>}
+{
+	"sourceAccount": "<source account number>",
+	"targetAccount": "<target account number>",
+	"amount": <amount>
+}
 ```
 
 A POST request like that creates one transaction in the system.
 
-Example with curl:
+**Example with curl**
 
 ----
 curl -H "Content-Type: application/json" -X POST -d '{"sourceAccount":"0","targetAccount":"1", "amount":5.0}' http://localhost:8080/transactions
@@ -60,11 +64,14 @@ Fields description:
 **Output**
 ```json
 {
-	"status":"PENDING",
-	"_links":
-		{"self":
-			{"href":"http://localhost:8080/transactions/2"}
-		}
+  "status":"PENDING",
+  "_links":
+  {
+    "self":
+	  {
+	    "href":"http://localhost:8080/transactions/2"
+	  }
+  }
 }
 ```
 
@@ -84,7 +91,7 @@ There are multiple reasons to obtain this error code:
 External transfers are not allowed. The system will check if the target account is an internal one.
 
 
-**PUT /transactions/<transactionID>**
+==== PUT /transactions/<transactionID>
 
 After creating a new transaction, it must be processed. To do that a PUT request must be sent to the server using the URI returned by the first operation. For example:
 
@@ -98,12 +105,14 @@ curl -H "Content-Type : application/json" -X PUT http://localhost:8080/transacti
 
 ```json
 {
-	"status":"COMPLETED",
-	"_links":{
-		"self":{
-			"href":"http://localhost:8080/transactions/2"
-		}
-	}
+  "status":"COMPLETED",
+  "_links":
+  {
+    "self":
+    {
+      "href":"http://localhost:8080/transactions/2"
+    }
+  }
 }
 ```
 
@@ -114,11 +123,24 @@ There are some reason obtaining this status code:
 - The <transactionId> is not found in the system
 - Transaction has been processed before
 
-===Errors
+=== Errors
 
 There is one central piece to manage the error within the controllers. This class is the RevolutControllerAdvice and provides all the information for the error. The implementation contains only a message, but it would be necessary to add more information like a developerMessage with more technical information, status code or manage errors as another resource providing a link with an identifier.
 
-===Links and Hypermedia
+The response could return one or multiple errors:
+
+```json
+  [
+    {
+      "message": "Invalid value for argument sourceAccount and description: Source account number is null or empty"
+    },
+    {
+      "message": "Invalid value for argument targetAccount and description: Target account number is null or empty"
+    }
+  ]
+```
+
+=== Links and Hypermedia
 
 It is a good practice to include links inside the resource to implement HATEOAS. For future features, it is a good idea to implement OPTIONS request to discover the API.
 
