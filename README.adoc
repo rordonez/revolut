@@ -35,15 +35,12 @@ For content negotiation, by default it uses the value of the Accept Header. The 
 
 === Operations
 
-POST /transactions
+**POST /transactions**
+
 Request Body
 
 ```json
-{
-	"sourceAccount": "<source account number>",
-	"targetAccount": "<target account number>",
-	"amount": <amount
-}
+{"sourceAccount": "<source account number>","targetAccount": "<target account number>","amount": <amount>}
 ```
 
 A POST request like that creates one transaction in the system.
@@ -60,7 +57,7 @@ Fields description:
 * targetAccount is the target account number.
 * amount is the desired amoung to be transfered.
 
-Output:
+**Output**
 ```json
 {
 	"status":"PENDING",
@@ -71,7 +68,7 @@ Output:
 }
 ```
 
-Error codes:
+**Error codes**
 
 400 BAD REQUEST
 
@@ -87,17 +84,17 @@ There are multiple reasons to obtain this error code:
 External transfers are not allowed. The system will check if the target account is an internal one.
 
 
-PUT /transactions/<transactionID>
+**PUT /transactions/<transactionID>**
 
 After creating a new transaction, it must be processed. To do that a PUT request must be sent to the server using the URI returned by the first operation. For example:
 
-Example with curl:
+**Example with curl**
 
 ----
 curl -H "Content-Type : application/json" -X PUT http://localhost:8080/transactions/<transactionId>
 ----
 
-Output:
+**Output**
 
 ```json
 {
@@ -110,7 +107,7 @@ Output:
 }
 ```
 
-Error codes:
+**Error codes**
 400 BAD REQUEST
 There are some reason obtaining this status code:
 
