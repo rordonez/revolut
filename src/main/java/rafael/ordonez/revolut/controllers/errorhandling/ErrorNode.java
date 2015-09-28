@@ -10,9 +10,6 @@ public class ErrorNode implements Serializable {
     private static final long serialVersionUID = 8019609330142487169L;
     private String message;
 
-    public ErrorNode() {
-    }
-
     public ErrorNode(String message) {
         this.message = message;
     }
