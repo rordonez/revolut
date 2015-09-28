@@ -43,11 +43,21 @@ public class TransferServiceImpl implements TransferService {
         LOG.info("Processing the transaction with id: " + transactionId);
         AccountTransfer transfer = getTransaction(transactionId);
 
-        accountRepository.setAmount(-transfer.getAmount(), transfer.getSourceAccountId());
-        accountRepository.setAmount(transfer.getAmount(), transfer.getTargetAccountId());
+        transferFunds(transfer.getSourceAccountId(), transfer.getTargetAccountId(), transfer.getAmount());
 
         transfer.setStatus(AccountTransferStatus.COMPLETED);
         return transferRepository.save(transfer);
+    }
+
+    private void transferFunds(long fromId, long toId, double amount) {
+        Long lowId = (fromId < toId ? fromId : toId);
+        Long highId = (fromId < toId ? toId : fromId);
+        synchronized (lowId) {
+            synchronized (highId) {
+                accountRepository.decreaseBy(amount, fromId);
+                accountRepository.increaseBy(amount, toId);
+            }
+        }
     }
 
     private AccountTransfer getTransaction(long transactionId) {
