@@ -35,11 +35,7 @@ For content negotiation, by default it uses the value of the *Accept Header*. Th
 
 === Operations
 
-<<<<<<< HEAD
 ==== POST /transactions
-=======
-====POST /transactions
->>>>>>> 89a143d18fb962766aa5a0284042a1014eac17f1
 
 **Request Body**
 
@@ -95,11 +91,8 @@ There are multiple reasons to obtain this error code:
 External transfers are not allowed. The system will check if the target account is an internal one.
 
 
-<<<<<<< HEAD
+
 ==== PUT /transactions/<transactionID>
-=======
-====PUT /transactions/<transactionID>
->>>>>>> 89a143d18fb962766aa5a0284042a1014eac17f1
 
 After creating a new transaction, it must be processed. To do that a PUT request must be sent to the server using the URI returned by the first operation. For example:
 
@@ -125,7 +118,9 @@ curl -H "Content-Type : application/json" -X PUT http://localhost:8080/transacti
 ```
 
 **Error codes**
+
 400 BAD REQUEST
+
 There are some reason obtaining this status code:
 
 - The <transactionId> is not found in the system
@@ -148,11 +143,7 @@ The response could return one or multiple errors:
   ]
 ```
 
-<<<<<<< HEAD
 === Links and Hypermedia
-=======
-===Links and Hypermedia
->>>>>>> 89a143d18fb962766aa5a0284042a1014eac17f1
 
 It is a good practice to include links inside the resource to implement HATEOAS. For future features, it is a good idea to implement OPTIONS request to discover the API.
 
